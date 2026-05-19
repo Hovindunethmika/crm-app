@@ -4,15 +4,14 @@ import { ArrowLeft, Edit2, Trash2, Send, MessageSquare } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import LeadModal from '../components/LeadModal';
-import { cn } from '../lib/utils';
 
 const STATUS_COLORS = {
-  New: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
-  Contacted: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  Qualified: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-  'Proposal Sent': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  Won: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Lost: 'bg-red-500/10 text-red-400 border-red-500/20',
+  New: { bg: 'rgba(14,165,233,0.12)', color: '#38bdf8', border: 'rgba(14,165,233,0.2)' },
+  Contacted: { bg: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: 'rgba(245,158,11,0.2)' },
+  Qualified: { bg: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: 'rgba(139,92,246,0.2)' },
+  'Proposal Sent': { bg: 'rgba(249,115,22,0.12)', color: '#fb923c', border: 'rgba(249,115,22,0.2)' },
+  Won: { bg: 'rgba(34,197,94,0.12)', color: '#4ade80', border: 'rgba(34,197,94,0.2)' },
+  Lost: { bg: 'rgba(239,68,68,0.12)', color: '#f87171', border: 'rgba(239,68,68,0.2)' },
 };
 
 const fmt = (val) =>
@@ -20,6 +19,12 @@ const fmt = (val) =>
 
 const fmtDate = (d) =>
   new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+const card = {
+  backgroundColor: '#111113',
+  border: '1px solid #1c1c1e',
+  borderRadius: '12px',
+};
 
 export default function LeadDetail() {
   const { id } = useParams();
@@ -58,14 +63,19 @@ export default function LeadDetail() {
   };
 
   if (loading) return (
-    <div className="flex-1 h-full flex items-center justify-center">
-      <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#09090b' }}>
+      <div style={{ width: '24px', height: '24px', border: '2px solid #7c3aed', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   if (!lead) return (
-    <div className="flex-1 h-full flex items-center justify-center text-zinc-600">Lead not found</div>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#09090b', color: '#3f3f46' }}>
+      Lead not found
+    </div>
   );
+
+  const sc = STATUS_COLORS[lead.status] || STATUS_COLORS.New;
 
   const infoItems = [
     { label: 'Email', value: lead.email },
@@ -78,83 +88,145 @@ export default function LeadDetail() {
   ];
 
   return (
-    <div className="p-8 max-w-4xl">
-      <Link to="/leads" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 mb-6 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Leads
+    <div style={{ padding: '36px 40px', backgroundColor: '#09090b', minHeight: '100vh', maxWidth: '900px' }}>
+
+      {/* Back */}
+      <Link to="/leads" style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontSize: '13px', color: '#52525b', textDecoration: 'none',
+        marginBottom: '24px', transition: 'color 0.15s',
+      }}
+        onMouseEnter={e => e.currentTarget.style.color = '#a1a1aa'}
+        onMouseLeave={e => e.currentTarget.style.color = '#52525b'}
+      >
+        <ArrowLeft size={14} /> Back to Leads
       </Link>
 
       {/* Lead Card */}
-      <div className="bg-zinc-900 border border-zinc-800/60 rounded-xl p-6 mb-5">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-2xl font-bold text-violet-400">
+      <div style={{ ...card, padding: '24px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '14px', flexShrink: 0,
+              backgroundColor: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '22px', fontWeight: 700, color: '#a78bfa',
+            }}>
               {lead.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">{lead.name}</h1>
-              <p className="text-zinc-500 text-sm mt-0.5">{lead.company}</p>
-              <span className={cn('mt-2 inline-block text-xs px-2.5 py-1 rounded-full border font-medium', STATUS_COLORS[lead.status])}>
-                {lead.status}
-              </span>
+              <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.3px' }}>
+                {lead.name}
+              </h1>
+              <p style={{ fontSize: '14px', color: '#52525b', margin: '4px 0 10px' }}>{lead.company}</p>
+              <span style={{
+                fontSize: '11px', fontWeight: 600, padding: '3px 10px',
+                borderRadius: '99px', border: `1px solid ${sc.border}`,
+                backgroundColor: sc.bg, color: sc.color,
+              }}>{lead.status}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setEditOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors"
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => setEditOpen(true)} style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 14px', backgroundColor: '#18181b', border: '1px solid #27272a',
+              borderRadius: '8px', color: '#a1a1aa', fontSize: '13px', fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'Outfit, sans-serif', transition: 'all 0.15s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#27272a'; e.currentTarget.style.color = '#e4e4e7'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#18181b'; e.currentTarget.style.color = '#a1a1aa'; }}
             >
-              <Edit2 className="w-3.5 h-3.5" /> Edit
+              <Edit2 size={14} /> Edit
             </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 text-sm rounded-lg transition-colors"
+            <button onClick={handleDelete} style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 14px', backgroundColor: 'transparent', border: '1px solid transparent',
+              borderRadius: '8px', color: '#52525b', fontSize: '13px', fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'Outfit, sans-serif', transition: 'all 0.15s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#52525b'; e.currentTarget.style.borderColor = 'transparent'; }}
             >
-              <Trash2 className="w-3.5 h-3.5" /> Delete
+              <Trash2 size={14} /> Delete
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-zinc-800/60">
+        {/* Info Grid */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px',
+          marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #1c1c1e',
+        }}>
           {infoItems.map((item) => (
             <div key={item.label}>
-              <p className="text-xs text-zinc-600 mb-1">{item.label}</p>
-              <p className="text-sm font-medium text-zinc-300">{item.value || '—'}</p>
+              <p style={{ fontSize: '11px', color: '#3f3f46', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                {item.label}
+              </p>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: '#a1a1aa', margin: 0 }}>{item.value || '—'}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Notes */}
-      <div className="bg-zinc-900 border border-zinc-800/60 rounded-xl overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-zinc-800/60">
-          <MessageSquare className="w-4 h-4 text-zinc-500" />
-          <h2 className="text-sm font-semibold text-zinc-300">Activity Notes</h2>
-          <span className="ml-auto text-xs text-zinc-600">{lead.notes?.length || 0} notes</span>
+      <div style={{ ...card, overflow: 'hidden' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '16px 24px', borderBottom: '1px solid #1c1c1e',
+        }}>
+          <MessageSquare size={15} color="#52525b" />
+          <h2 style={{ fontSize: '13px', fontWeight: 600, color: '#a1a1aa', margin: 0, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Activity Notes
+          </h2>
+          <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#3f3f46' }}>
+            {lead.notes?.length || 0} notes
+          </span>
         </div>
 
         {/* Add Note */}
-        <div className="px-6 py-4 border-b border-zinc-800/40">
-          <div className="flex gap-3">
-            <div className="w-7 h-7 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-400 flex-shrink-0 mt-1">
+        <div style={{ padding: '16px 24px', borderBottom: '1px solid #18181b' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{
+              width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
+              backgroundColor: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '12px', fontWeight: 600, color: '#a78bfa', marginTop: '2px',
+            }}>
               {user?.name?.charAt(0) || 'U'}
             </div>
-            <div className="flex-1">
+            <div style={{ flex: 1 }}>
               <textarea
                 rows={2}
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 placeholder="Log a call, email, meeting update..."
-                className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-violet-500/60 transition-colors resize-none"
                 onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) handleAddNote(); }}
+                style={{
+                  width: '100%', backgroundColor: '#18181b', border: '1px solid #27272a',
+                  borderRadius: '8px', padding: '10px 12px', fontSize: '13px',
+                  color: '#e4e4e7', fontFamily: 'Outfit, sans-serif',
+                  resize: 'none', outline: 'none', transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                onBlur={e => e.target.style.borderColor = '#27272a'}
               />
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-zinc-700">⌘ + Enter to submit</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
+                <span style={{ fontSize: '11px', color: '#3f3f46' }}>⌘ + Enter to submit</span>
                 <button
                   onClick={handleAddNote}
                   disabled={addingNote || !noteText.trim()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white text-xs font-medium rounded-lg transition-colors"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '7px 14px', backgroundColor: '#7c3aed',
+                    color: '#fff', border: 'none', borderRadius: '7px',
+                    fontSize: '12px', fontWeight: 500, cursor: addingNote || !noteText.trim() ? 'not-allowed' : 'pointer',
+                    opacity: addingNote || !noteText.trim() ? 0.4 : 1,
+                    fontFamily: 'Outfit, sans-serif', transition: 'all 0.15s',
+                  }}
                 >
-                  <Send className="w-3 h-3" />
+                  <Send size={12} />
                   {addingNote ? 'Adding...' : 'Add Note'}
                 </button>
               </div>
@@ -163,26 +235,34 @@ export default function LeadDetail() {
         </div>
 
         {/* Notes List */}
-        <div className="divide-y divide-zinc-800/40">
-          {!lead.notes?.length ? (
-            <p className="px-6 py-8 text-center text-zinc-600 text-sm">No notes yet. Log your first interaction.</p>
-          ) : (
-            lead.notes.map((note) => (
-              <div key={note.id} className="flex gap-3 px-6 py-4">
-                <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500 flex-shrink-0 mt-0.5">
-                  {note.createdBy?.name?.charAt(0) || 'U'}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-medium text-zinc-400">{note.createdBy?.name}</span>
-                    <span className="text-xs text-zinc-700">{fmtDate(note.createdAt)}</span>
-                  </div>
-                  <p className="text-sm text-zinc-300 leading-relaxed">{note.content}</p>
-                </div>
+        {!lead.notes?.length ? (
+          <p style={{ padding: '40px', textAlign: 'center', color: '#3f3f46', fontSize: '14px', margin: 0 }}>
+            No notes yet. Log your first interaction.
+          </p>
+        ) : (
+          lead.notes.map((note, i) => (
+            <div key={note.id} style={{
+              display: 'flex', gap: '12px', padding: '16px 24px',
+              borderBottom: i < lead.notes.length - 1 ? '1px solid #18181b' : 'none',
+            }}>
+              <div style={{
+                width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
+                backgroundColor: '#18181b', border: '1px solid #27272a',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '11px', fontWeight: 700, color: '#71717a', marginTop: '2px',
+              }}>
+                {note.createdBy?.name?.charAt(0) || 'U'}
               </div>
-            ))
-          )}
-        </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#71717a' }}>{note.createdBy?.name}</span>
+                  <span style={{ fontSize: '11px', color: '#3f3f46' }}>{fmtDate(note.createdAt)}</span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#a1a1aa', margin: 0, lineHeight: 1.6 }}>{note.content}</p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <LeadModal
