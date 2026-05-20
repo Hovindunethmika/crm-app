@@ -234,7 +234,7 @@ Opens at `http://localhost:5555`
 
 ## Deployed Application
 
-[Live App](https://your-deployed-app-link.com)
+[Live App](https://3ef20384-ee52-42d8-bb50-6f2d71f82dae.e1-us-east-azure.choreoapps.dev)
 
 > Test credentials: `admin@example.com` / `password123`
 
