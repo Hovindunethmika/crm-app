@@ -1,0 +1,7 @@
+schemaVersion: 1.0
+endpoints:
+  - name: crm-api
+    port: 8080
+    type: REST
+    networkVisibility: Public
+    basePath: /
